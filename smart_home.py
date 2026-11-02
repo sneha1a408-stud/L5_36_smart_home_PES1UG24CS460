@@ -6,7 +6,7 @@ import os
 
 HUB_HOST = "127.0.0.1"
 HUB_PORT = 8080
-POWER_USAGE = {"light" : 10, "fan": 60, "thermostat": 1500, "tv": 120}
+POWER_USAGE = {"light": 10, "fan": 60, "thermostat": 1500, "tv": 120}
 HUB_PASSWORD = os.getenv("SMART_HOME_PASSWORD")
 devices = {}
 
@@ -88,9 +88,12 @@ def main():
     set_temperature("Ceiling Light", 20)
     print("Bedroom devices:", devices_in_room("Bedroom"))
     print("Current power use (W):", power_usage())
-    print("Hub address:", hub_address()) # for app setup
+    print("Hub address:", hub_address())  # for app setup
     print("Light settings:", devices["Ceiling Light"]["settings"])
-    print("Devices on:", [name for name, info in devices.items() if info["on"]])
+    active_devices = [
+        name for name, info in devices.items() if info["on"]
+    ]
+    print("Devices on:", active_devices)
     save_state()
 
 
