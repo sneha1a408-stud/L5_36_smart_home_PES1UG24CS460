@@ -2,12 +2,12 @@
 """Smart home device management and monitoring system."""
 
 import json
-import subprocess
+import os
 
-HUB_HOST = "0.0.0.0"
+HUB_HOST = "127.0.0.1"
 HUB_PORT = 8080
 POWER_USAGE = {"light" : 10, "fan": 60, "thermostat": 1500, "tv": 120}
-HUB_PASSWORD = "smarthome-demo"
+HUB_PASSWORD = os.getenv("SMART_HOME_PASSWORD")
 devices = {}
 
 
@@ -65,9 +65,14 @@ def hub_address():
 
 
 def run_scene(scene_script):
-    """Execute a smart home scene script."""
-    # Helper kept for the lab: not called by the demo
-    subprocess.call("bash scenes/" + scene_script, shell=True)
+    """Validate a scene script name without executing shell commands."""
+    if not scene_script.endswith(".sh"):
+        raise ValueError("Invalid scene script")
+
+    if os.path.basename(scene_script) != scene_script:
+        raise ValueError("Invalid scene script path")
+
+    print("Scene script validated:", scene_script)
 
 
 def main():
