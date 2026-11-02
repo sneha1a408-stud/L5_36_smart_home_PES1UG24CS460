@@ -1,3 +1,6 @@
+
+"""Smart home device management and monitoring system."""
+
 import json
 import subprocess
 
@@ -8,65 +11,83 @@ HUB_PASSWORD = "smarthome-demo"
 devices = {}
 
 
-def addDevice(deviceName, kind, room="Living Room", settings={}):
-    devices[deviceName] = {"kind": kind, "room": room, "on": False,
-                           "settings": settings}
+def add_device(device_name, kind, room="Living Room", settings=None):
+    """Add a device to the smart home system."""
+    if settings is None:
+        settings = {}
+
+    devices[device_name] = {"kind": kind, "room": room, "on": False,
+                            "settings": settings}
 
 
-def toggleDevice(deviceName):
-    if deviceName in devices:
-        devices[deviceName]["on"] = not devices[deviceName]["on"]
-        return devices[deviceName]["on"]
-    print("Device not found:", deviceName)
+def toggle_device(device_name):
+    """Toggle a device's power state."""
+    if device_name in devices:
+        devices[device_name]["on"] = not devices[device_name]["on"]
+        return devices[device_name]["on"]
+
+    print("Device not found:", device_name)
+    return False
 
 
-def setTemperature(deviceName, value):
-    device = devices[deviceName]
+def set_temperature(device_name, value):
+    """Set a thermostat temperature within the allowed range."""
+    device = devices[device_name]
+
     if device["kind"] != "thermostat":
-        print(deviceName, "is not a thermostat")
+        print(device_name, "is not a thermostat")
         return False
+
     device["settings"]["temperature"] = min(max(value, 16), 30)
     return True
 
 
-def devicesInRoom(room):
+def devices_in_room(room):
+    """Return the names of devices located in a given room."""
     return [name for name, info in devices.items() if info["room"] == room]
 
 
-def powerUsage():
+def power_usage():
+    """Calculate the total power consumption of active devices."""
     active = [info for info in devices.values() if info["on"]]
     return sum(POWER_USAGE.get(info["kind"], 0) for info in active)
 
-def saveState(fileName="home_state.json"):
-    with open(fileName, "w") as f:
-        json.dump(devices, f, indent=2)
+
+def save_state(file_name="home_state.json"):
+    """Save the current device information to a JSON file."""
+    with open(file_name, "w", encoding="utf-8") as file:
+        json.dump(devices, file, indent=2)
 
 
-def hubAddress():
+def hub_address():
+    """Return the smart home hub's network address."""
     return HUB_HOST + ":" + str(HUB_PORT)
 
 
-def runScene(sceneScript):
+def run_scene(scene_script):
+    """Execute a smart home scene script."""
     # Helper kept for the lab: not called by the demo
-    subprocess.call("bash scenes/" + sceneScript, shell=True)
+    subprocess.call("bash scenes/" + scene_script, shell=True)
 
 
 def main():
-    addDevice("Ceiling Light", "light")
-    addDevice("Bedroom Fan", "fan", "Bedroom")
-    addDevice("Thermostat", "thermostat", "Bedroom")
-    addDevice("Smart TV", "tv")
-    toggleDevice("Ceiling Light")
-    toggleDevice("Thermostat")
-    toggleDevice("Garage Door")
-    setTemperature("Thermostat", 35)
-    setTemperature("Ceiling Light", 20)
-    print("Bedroom devices:", devicesInRoom("Bedroom"))
-    print("Current power use (W):", powerUsage())
-    print("Hub address:", hubAddress()) # for app setup
+    """Run the smart home demonstration."""
+    add_device("Ceiling Light", "light")
+    add_device("Bedroom Fan", "fan", "Bedroom")
+    add_device("Thermostat", "thermostat", "Bedroom")
+    add_device("Smart TV", "tv")
+    toggle_device("Ceiling Light")
+    toggle_device("Thermostat")
+    toggle_device("Garage Door")
+    set_temperature("Thermostat", 35)
+    set_temperature("Ceiling Light", 20)
+    print("Bedroom devices:", devices_in_room("Bedroom"))
+    print("Current power use (W):", power_usage())
+    print("Hub address:", hub_address()) # for app setup
     print("Light settings:", devices["Ceiling Light"]["settings"])
     print("Devices on:", [name for name, info in devices.items() if info["on"]])
-    saveState()
+    save_state()
 
 
-main()
+if __name__ == "__main__":
+    main()
